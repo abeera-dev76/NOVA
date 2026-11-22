@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e0e17"/>
+      <stop offset="50%" stop-color="#141224"/>
+      <stop offset="100%" stop-color="#08070d"/>
+    </linearGradient>
+    <linearGradient id="rgbPurple" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <filter id="neon5" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bgGrad5)"/>
+  <circle cx="400" cy="300" r="180" fill="#8b5cf6" opacity="0.15" filter="url(#neon5)"/>
+  <ellipse cx="400" cy="460" rx="260" ry="24" fill="#000000" opacity="0.8"/>
+
+  <!-- Keyboard Chassis (Perspective Angle) -->
+  <polygon points="170,260 630,260 660,420 140,420" fill="#12121b" stroke="#2d2a42" stroke-width="6"/>
+  <polygon points="180,270 620,270 648,410 152,410" fill="#09080e" stroke="url(#rgbPurple)" stroke-width="2" filter="url(#neon5)"/>
+
+  <!-- Keycap Rows Mockup -->
+  <g fill="#181726" stroke="#27253a" stroke-width="1.5">
+    <!-- Row 1 -->
+    <rect x="195" y="280" width="30" height="20" rx="3"/><rect x="235" y="280" width="30" height="20" rx="3"/><rect x="275" y="280" width="30" height="20" rx="3"/><rect x="315" y="280" width="30" height="20" rx="3"/><rect x="355" y="280" width="30" height="20" rx="3"/><rect x="395" y="280" width="30" height="20" rx="3"/><rect x="435" y="280" width="30" height="20" rx="3"/><rect x="475" y="280" width="30" height="20" rx="3"/><rect x="515" y="280" width="30" height="20" rx="3"/><rect x="555" y="280" width="45" height="20" rx="3"/>
+    
+    <!-- Row 2 -->
+    <rect x="190" y="310" width="38" height="22" rx="3"/><rect x="235" y="310" width="32" height="22" rx="3"/><rect x="275" y="310" width="32" height="22" rx="3"/><rect x="315" y="310" width="32" height="22" rx="3"/><rect x="355" y="310" width="32" height="22" rx="3"/><rect x="395" y="310" width="32" height="22" rx="3"/><rect x="435" y="310" width="32" height="22" rx="3"/><rect x="475" y="310" width="32" height="22" rx="3"/><rect x="515" y="310" width="32" height="22" rx="3"/><rect x="555" y="310" width="50" height="22" rx="3"/>
+
+    <!-- Row 3 -->
+    <rect x="185" y="342" width="44" height="24" rx="3"/><rect x="237" y="342" width="34" height="24" rx="3"/><rect x="279" y="342" width="34" height="24" rx="3"/><rect x="321" y="342" width="34" height="24" rx="3"/><rect x="363" y="342" width="34" height="24" rx="3"/><rect x="405" y="342" width="34" height="24" rx="3"/><rect x="447" y="342" width="34" height="24" rx="3"/><rect x="489" y="342" width="34" height="24" rx="3"/><rect x="531" y="342" width="34" height="24" rx="3"/><rect x="573" y="342" width="40" height="24" rx="3"/>
+
+    <!-- Spacebar Row -->
+    <rect x="175" y="375" width="55" height="26" rx="4"/><rect x="240" y="375" width="45" height="26" rx="4"/><rect x="295" y="375" width="200" height="26" rx="4" fill="#201c38" stroke="#8b5cf6" stroke-width="2" filter="url(#neon5)"/><rect x="505" y="375" width="50" height="26" rx="4"/><rect x="565" y="375" width="55" height="26" rx="4"/>
+  </g>
+
+  <!-- Rotary Knob with Purple Glow -->
+  <circle cx="585" cy="275" r="14" fill="#1e1c2e" stroke="#c084fc" stroke-width="3" filter="url(#neon5)"/>
+</svg>
