@@ -111,7 +111,7 @@ export const products = [
     stockQuantity: 30,
     description: 'Gasket-mounted hot-swappable mechanical keyboard featuring sound-dampening brass weight and per-key RGB backlighting.',
     images: [
-      '/images/products/gaming/gaming-1.svg'
+      '/images/products/gaming.png'
     ],
     colors: ['#070709', '#8b5cf6'],
     specs: {

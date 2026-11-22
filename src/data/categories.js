@@ -36,7 +36,7 @@ export const categories = [
     name: 'Gaming',
     slug: 'gaming',
     description: 'Cutting-edge peripheral interfaces built for competitive domination.',
-    image: '/images/categories/gaming.svg',
+    image: '/images/products/gaming.png',
     itemCount: 15
   },
   {

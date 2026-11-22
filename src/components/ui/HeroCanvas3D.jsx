@@ -1,35 +1,56 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { Sparkles, Zap, ShieldCheck } from 'lucide-react';
 
 /**
  * Premium 3D Interactive Sneaker Showcase for Hero Section
  * Uses the local sneaker image from public/images/products/sneakers/Air Jordan Sneakers.png
- * Features realistic 3D perspective tilt, mouse tracking, floating animation,
- * dynamic multi-layer purple neon glow, and responsive ground contact shadow.
+ * - Immediate static rendering (preloaded, fetchpriority="high", CLS-safe aspect ratio)
+ * - Seamless transition into real-time 3D tilt & physics without flicker or blank states
+ * - Fallback resilience & reduced-motion accessibility support
  */
 const HeroCanvas3D = () => {
   const containerRef = useRef(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [is3DReady, setIs3DReady] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setPrefersReducedMotion(mediaQuery.matches);
+
+      const handleChange = (e) => setPrefersReducedMotion(e.matches);
+      mediaQuery.addEventListener('change', handleChange);
+
+      // Initialize 3D physics smoothly after first paint has occurred
+      const raf = requestAnimationFrame(() => {
+        setIs3DReady(true);
+      });
+
+      return () => {
+        mediaQuery.removeEventListener('change', handleChange);
+        cancelAnimationFrame(raf);
+      };
+    }
+  }, []);
 
   // Mouse position values for 3D tilt
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
   // Spring physics for buttery-smooth 3D reaction
-  const springConfig = { damping: 20, stiffness: 180, mass: 0.6 };
+  const springConfig = { damping: 22, stiffness: 190, mass: 0.5 };
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
   // 3D rotation transforms
-  const rotateX = useTransform(smoothY, [-0.5, 0.5], [16, -16]);
-  const rotateY = useTransform(smoothX, [-0.5, 0.5], [-24, 24]);
-  const shineX = useTransform(smoothX, [-0.5, 0.5], ['0%', '100%']);
+  const rotateX = useTransform(smoothY, [-0.5, 0.5], is3DReady && !prefersReducedMotion ? [16, -16] : [0, 0]);
+  const rotateY = useTransform(smoothX, [-0.5, 0.5], is3DReady && !prefersReducedMotion ? [-24, 24] : [0, 0]);
+  const shineX = useTransform(smoothX, [-0.5, 0.5], ['-20%', '120%']);
   const shadowTranslateX = useTransform(smoothX, [-0.5, 0.5], [-20, 20]);
 
   const handleMouseMove = (e) => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || prefersReducedMotion) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
@@ -51,7 +72,7 @@ const HeroCanvas3D = () => {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-full min-h-[400px] sm:min-h-[480px] lg:min-h-[560px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
+      className="relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
       style={{ perspective: 1200 }}
     >
       {/* Background Radial Ambient Lighting */}
@@ -64,9 +85,7 @@ const HeroCanvas3D = () => {
 
       {/* 3D Floating Sneaker Wrapper */}
       <motion.div
-        animate={{
-          y: [-12, 12, -12],
-        }}
+        animate={!prefersReducedMotion ? { y: [-12, 12, -12] } : { y: 0 }}
         transition={{
           duration: 5,
           repeat: Infinity,
@@ -77,25 +96,30 @@ const HeroCanvas3D = () => {
           rotateY,
           transformStyle: 'preserve-3d',
         }}
-        className="relative z-10 w-full max-w-[480px] sm:max-w-[540px] flex items-center justify-center p-4"
+        className="relative z-10 w-full max-w-[480px] sm:max-w-[540px] aspect-[540/440] flex items-center justify-center p-4 transition-transform duration-300"
       >
         {/* Dynamic Light Reflection Sheen */}
-        <motion.div
-          style={{ x: shineX }}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-400/10 to-transparent skew-x-12 pointer-events-none opacity-50"
-        />
+        {is3DReady && !prefersReducedMotion && (
+          <motion.div
+            style={{ x: shineX }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-300/15 to-transparent skew-x-12 pointer-events-none opacity-60 rounded-3xl"
+          />
+        )}
 
-        {/* Sneaker Image from public/images/products/sneakers/ */}
+        {/* Sneaker Image: Instant Display, Zero Shift, High Priority */}
         <img
           src={sneakerSrc}
           alt="Air Jordan Cyber Sneaker 3D Showcase"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          width="540"
+          height="440"
           onError={() => setImageError(true)}
-          onLoad={() => setImageLoaded(true)}
-          className={`w-full max-h-[380px] sm:max-h-[440px] object-contain transition-all duration-700 drop-shadow-[0_20px_35px_rgba(139,92,246,0.35)] drop-shadow-[0_45px_70px_rgba(0,0,0,0.85)] filter ${
-            imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
+          className="w-full h-full max-h-[380px] sm:max-h-[440px] object-contain drop-shadow-[0_20px_35px_rgba(139,92,246,0.35)] drop-shadow-[0_45px_70px_rgba(0,0,0,0.85)] filter select-none pointer-events-none"
           style={{
-            transform: 'translateZ(40px)',
+            transform: is3DReady ? 'translateZ(40px)' : 'none',
+            transition: 'transform 0.4s ease-out',
           }}
         />
       </motion.div>
@@ -103,10 +127,10 @@ const HeroCanvas3D = () => {
       {/* Ground Reactive Contact Shadow */}
       <motion.div
         style={{ x: shadowTranslateX }}
-        animate={{
+        animate={!prefersReducedMotion ? {
           scale: [0.9, 1.1, 0.9],
           opacity: [0.6, 0.8, 0.6],
-        }}
+        } : { scale: 1, opacity: 0.7 }}
         transition={{
           duration: 5,
           repeat: Infinity,
@@ -117,10 +141,10 @@ const HeroCanvas3D = () => {
       
       {/* Secondary Purple Neon Glow Shadow */}
       <motion.div
-        animate={{
+        animate={!prefersReducedMotion ? {
           scale: [0.85, 1.05, 0.85],
           opacity: [0.35, 0.55, 0.35],
-        }}
+        } : { scale: 1, opacity: 0.45 }}
         transition={{
           duration: 5,
           repeat: Infinity,
