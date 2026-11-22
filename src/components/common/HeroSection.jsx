@@ -39,16 +39,15 @@ const HeroSection = () => {
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tight text-white leading-[1.08] mb-6">
-              THE FUTURE OF{' '}
+              STYLE THAT{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-300 to-indigo-400">
-                DIGITAL LUXURY.
+                DEFINES YOU.
               </span>
             </h1>
 
             {/* Supporting description */}
             <p className="text-base sm:text-lg text-nova-muted max-w-xl leading-relaxed mb-8">
-              Experience responsive carbon fiber ergonomics, adaptive purple neon cushioning, and precision lifestyle gear.
-              Interact with our flagship cyber sneaker in real-time 3D.
+              Discover premium sneakers, fashion, accessories and lifestyle essentials — curated for your everyday style.
             </p>
 
             {/* CTAs */}
