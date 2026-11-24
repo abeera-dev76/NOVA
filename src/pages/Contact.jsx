@@ -1,14 +1,87 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+
+const WEBHOOK_URL = 'https://abeeraimtiaz.app.n8n.cloud/webhook-test/custom';
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
-  const handleSubmit = (e) => {
+  const validate = () => {
+    const errors = {};
+    const trimmedName = form.name.trim();
+    const trimmedEmail = form.email.trim();
+    const trimmedMessage = form.message.trim();
+
+    if (!trimmedName) {
+      errors.name = 'Please enter your name.';
+    }
+
+    if (!trimmedEmail) {
+      errors.email = 'Please enter your email address.';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        errors.email = 'Please enter a valid email address.';
+      }
+    }
+
+    if (!trimmedMessage) {
+      errors.message = 'Please enter your message.';
+    }
+
+    return errors;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setForm({ name: '', email: '', message: '' });
+
+    // Prevent duplicate submissions while request is processing
+    if (loading) return;
+
+    setErrorMessage('');
+
+    // Validate inputs
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({});
+    setLoading(true);
+
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          message: form.message.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        setForm({ name: '', email: '', message: '' });
+      } else {
+        setErrorMessage(
+          'Unable to deliver your message at this moment. Please try again or reach out to us at concierge@nova.pk.'
+        );
+      }
+    } catch (err) {
+      setErrorMessage(
+        'A network error occurred while submitting your message. Please check your internet connection and try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,61 +138,129 @@ const Contact = () => {
           {submitted ? (
             <div className="text-center py-12">
               <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">Message Dispatched!</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Thank you! Your message has been received.
+              </h3>
               <p className="text-xs text-nova-muted max-w-sm mx-auto mb-6">
-                Thank you for reaching out. A dedicated concierge specialist will respond within 2 to 4 business hours.
+                A dedicated concierge specialist will review your inquiry and respond within 2 to 4 business hours.
               </p>
               <button
-                onClick={() => setSubmitted(false)}
-                className="px-6 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                onClick={() => {
+                  setSubmitted(false);
+                  setErrorMessage('');
+                  setValidationErrors({});
+                }}
+                className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition shadow-glow-purple"
               >
                 Send Another Message
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              {/* Submission Error Banner */}
+              {errorMessage && (
+                <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/30 flex items-start gap-2.5 text-xs text-red-300">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              {/* Submission Loading Banner */}
+              {loading && (
+                <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-2.5 text-xs text-purple-300 animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin text-purple-400 shrink-0" />
+                  <span>Submitting your message to NOVA Concierge...</span>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">Your Name</label>
                 <input
-                  required
                   type="text"
+                  disabled={loading}
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, name: e.target.value });
+                    if (validationErrors.name) {
+                      setValidationErrors((prev) => ({ ...prev, name: '' }));
+                    }
+                  }}
                   placeholder="Ali Raza"
-                  className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white text-sm focus:border-purple-500 focus:outline-none"
+                  className={`w-full px-4 py-3 rounded-xl bg-black/60 border text-white text-sm focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                    validationErrors.name
+                      ? 'border-red-500/60 focus:border-red-500'
+                      : 'border-white/10 focus:border-purple-500'
+                  }`}
                 />
+                {validationErrors.name && (
+                  <p className="text-[11px] text-red-400 mt-1">{validationErrors.name}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">Email Address</label>
                 <input
-                  required
                   type="email"
+                  disabled={loading}
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, email: e.target.value });
+                    if (validationErrors.email) {
+                      setValidationErrors((prev) => ({ ...prev, email: '' }));
+                    }
+                  }}
                   placeholder="ali@domain.pk"
-                  className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white text-sm focus:border-purple-500 focus:outline-none"
+                  className={`w-full px-4 py-3 rounded-xl bg-black/60 border text-white text-sm focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                    validationErrors.email
+                      ? 'border-red-500/60 focus:border-red-500'
+                      : 'border-white/10 focus:border-purple-500'
+                  }`}
                 />
+                {validationErrors.email && (
+                  <p className="text-[11px] text-red-400 mt-1">{validationErrors.email}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">Your Inquiry / Message</label>
                 <textarea
-                  required
                   rows={4}
+                  disabled={loading}
                   value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, message: e.target.value });
+                    if (validationErrors.message) {
+                      setValidationErrors((prev) => ({ ...prev, message: '' }));
+                    }
+                  }}
                   placeholder="Tell us how we can assist you..."
-                  className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white text-sm focus:border-purple-500 focus:outline-none"
+                  className={`w-full px-4 py-3 rounded-xl bg-black/60 border text-white text-sm focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                    validationErrors.message
+                      ? 'border-red-500/60 focus:border-red-500'
+                      : 'border-white/10 focus:border-purple-500'
+                  }`}
                 />
+                {validationErrors.message && (
+                  <p className="text-[11px] text-red-400 mt-1">{validationErrors.message}</p>
+                )}
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-glow-purple transition flex items-center justify-center gap-2"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-glow-purple transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
-                <span>Dispatch Message</span>
-                <Send className="w-4 h-4" />
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-purple-200" />
+                    <span>Submitting message...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Dispatch Message</span>
+                    <Send className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}
