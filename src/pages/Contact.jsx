@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
-const WEBHOOK_URL = 'https://abeeraimtiaz.app.n8n.cloud/webhook-test/custom';
+const WEBHOOK_URL = "https://abeeraimtiaz.app.n8n.cloud/webhook-test/custom";
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
